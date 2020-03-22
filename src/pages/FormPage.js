@@ -53,6 +53,7 @@ export default function FormPage(props) {
   // You can now get a ref directly to the DOM button:
   const ref = React.createRef();
 
+  console.log("form render"); //sy-log
   return (
     <div>
       <FancyButton ref={ref}>Click me!</FancyButton>

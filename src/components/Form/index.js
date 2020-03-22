@@ -8,23 +8,19 @@ import React, {
 } from "react";
 import {FormItemContext, FormContext} from "./context";
 
-class InternalForm extends Component {
-  render() {
-    const {form, children, onFinish, onFinishFailed} = this.props;
-    const ctx = {
-      form,
-      onFinish,
-      onFinishFailed
-    };
-    return (
-      <FormContext.Provider value={ctx}>
-        <div className="form">{children}</div>
-      </FormContext.Provider>
-    );
-  }
-}
-
-const formref = React.createRef();
+const InternalForm = (props, ref) => {
+  const {form, children, onFinish, onFinishFailed} = props;
+  const ctx = {
+    form,
+    onFinish,
+    onFinishFailed
+  };
+  return (
+    <FormContext.Provider value={ctx}>
+      <div className="form">{children}</div>
+    </FormContext.Provider>
+  );
+};
 
 function FormItem({label, name, rules, children}) {
   return (
@@ -44,8 +40,20 @@ function FormItem({label, name, rules, children}) {
 
 function HandleInput(input, name, rules) {
   const {form} = useContext(FormContext);
-
   const {setFieldsValue, getFieldValue} = form;
+
+  const err = useMemo(() => {
+    let res;
+    let rule = rules[0];
+    console.log("getFieldValue(name)", getFieldValue(name)); //sy-log
+    if (
+      rule.required &&
+      (getFieldValue(name) === "" || getFieldValue(name) === null)
+    ) {
+      res = rule.message;
+    }
+    return res;
+  }, [getFieldValue(name)]);
 
   const onChange = e => {
     let value = e.target.value;
@@ -60,7 +68,7 @@ function HandleInput(input, name, rules) {
         name,
         onChange
       })}
-      {/* <p className="red">{allError[name]}</p> */}
+      <p className="red">{err}</p>
     </>
   );
 }
@@ -90,9 +98,6 @@ function HandleButton(button) {
   });
 }
 
-const Form = props => <InternalForm {...props} ref={formref} />;
-// const Form = React.forwardRef(InternalForm);
-
 function useForm() {
   const [fields, setFields] = useState({});
   let rules = {};
@@ -119,6 +124,8 @@ function useForm() {
     setFields(tem);
   };
 
+  const validateFields = () => {};
+
   return [
     {
       setFieldsValue,
@@ -128,6 +135,8 @@ function useForm() {
     }
   ];
 }
+
+const Form = React.forwardRef(InternalForm);
 
 export {useForm, FormItem};
 export default Form;

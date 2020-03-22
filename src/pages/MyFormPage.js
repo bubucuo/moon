@@ -23,7 +23,7 @@ export default function MyFormPage(props) {
 
   useEffect(() => {
     setFieldsValue({name: "default"});
-    console.log("my-form", form); //sy-log
+    // console.log("my-form", form); //sy-log
   }, []);
 
   const onFinish = val => {
@@ -35,7 +35,7 @@ export default function MyFormPage(props) {
   const onReset = err => {
     // resetFields();
   };
-  // console.log("my-form render");
+  console.log("my-form render");
 
   return (
     <div>
