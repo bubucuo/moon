@@ -32,6 +32,7 @@ function FormItem({label, name, rules, children}) {
         }
         if (child.type === "button") {
           return HandleButton(child);
+          // return <ButtonClass button={child} />;
         }
       })}
     </div>
@@ -45,7 +46,6 @@ function HandleInput(input, name, rules) {
   const err = useMemo(() => {
     let res;
     let rule = rules[0];
-    console.log("getFieldValue(name)", getFieldValue(name)); //sy-log
     if (
       rule.required &&
       (getFieldValue(name) === "" || getFieldValue(name) === null)
@@ -74,10 +74,8 @@ function HandleInput(input, name, rules) {
 }
 
 function HandleButton(button) {
-  const {onFinish, onFinishFailed} = useContext(FormContext);
-  const {props} = button;
-  const {htmltype} = props;
-  const {form} = useContext(FormContext);
+  const {onFinish, onFinishFailed, form} = useContext(FormContext);
+  const {htmltype} = button.props;
   const {getFieldsValue} = form;
 
   const onClick = e => {
@@ -93,6 +91,7 @@ function HandleButton(button) {
         break;
     }
   };
+
   return React.cloneElement(button, {
     onClick
   });
