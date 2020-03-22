@@ -24,12 +24,12 @@ export default function FormPage(props) {
   } = form;
 
   useEffect(() => {
-    // setFieldsValue({name: "default"});
+    setFieldsValue({name: "default"});
     console.log("form", form); //sy-log
   }, []);
 
   const onFinish = val => {
-    console.log("val", val); //sy-log
+    console.log("onFinish", val); //sy-log
   };
   const onFinishFailed = err => {
     console.log("err", err); //sy-log
@@ -37,9 +37,26 @@ export default function FormPage(props) {
   const onReset = err => {
     resetFields();
   };
+  // console.log("form render");
+
+  const FancyButton = React.forwardRef((props, ref) => (
+    <button
+      ref={ref}
+      className="FancyButton"
+      onClick={() => {
+        console.log("oooo", ref); //sy-log
+      }}>
+      {props.children}
+    </button>
+  ));
+
+  // You can now get a ref directly to the DOM button:
+  const ref = React.createRef();
 
   return (
     <div>
+      <FancyButton ref={ref}>Click me!</FancyButton>
+
       <h3>FormPage</h3>
       <Form
         form={form}

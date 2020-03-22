@@ -1,111 +1,85 @@
-import React, {useState, useEffect, useContext} from "react";
+import React, {
+  Component,
+  useState,
+  useEffect,
+  useContext,
+  useMemo,
+  useReducer
+} from "react";
 import {FormItemContext, FormContext} from "./context";
 
-const Form = props => {
-  const {form, onFinish, onFinishFailed, onReset, children, ...rest} = props;
-  const [allError, setAllError] = useState({});
-  const [allVal, setAllVal] = useState({});
-  const allRules = {};
-  const ctx = {
-    allRules,
-    allVal,
-    setAllVal,
-    setAllVal,
-    allError,
-    setAllError,
-    onFinish,
-    onFinishFailed
-  };
-
-  return (
-    <FormContext.Provider value={ctx}>
-      <div className="form">{children}</div>
-    </FormContext.Provider>
-  );
-};
-
-function useForm() {
-  const form = useContext(FormContext) || {};
-  const {
-    allVal,
-    setAllVal,
-    allRules,
-    allError,
-    setAllError,
-    onFinish,
-    onFinishFailed
-  } = form;
-  return [
-    {
-      validateFields: () => {
-        validateFields(allVal, allRules);
-      },
-      setFieldsValue: val => {
-        console.log("====================================");
-        console.log(setAllVal);
-        console.log("====================================");
-        //setAllVal({...allVal, ...val});
-      }
-    }
-  ];
+class InternalForm extends Component {
+  render() {
+    const {form, children, onFinish, onFinishFailed} = this.props;
+    const ctx = {
+      form,
+      onFinish,
+      onFinishFailed
+    };
+    return (
+      <FormContext.Provider value={ctx}>
+        <div className="form">{children}</div>
+      </FormContext.Provider>
+    );
+  }
 }
+
+const formref = React.createRef();
 
 function FormItem({label, name, rules, children}) {
   return (
     <div>
       <label>{label}</label>
-      {children.type === "input" && <>{HandleInput(children, name, rules)}</>}
-      {children.type === "button" && HandleButton(children)}
+      {React.Children.map(children, child => {
+        if (child.type === "input") {
+          return HandleInput(child, name, rules);
+        }
+        if (child.type === "button") {
+          return HandleButton(child);
+        }
+      })}
     </div>
   );
 }
 
 function HandleInput(input, name, rules) {
-  const {allRules, allVal, setAllVal, allError, setAllError} = useContext(
-    FormContext
-  );
-  allRules[name] = rules;
+  const {form} = useContext(FormContext);
+
+  const {setFieldsValue, getFieldValue} = form;
+
   const onChange = e => {
     let value = e.target.value;
-    let newAllVal = {...allVal, [name]: value};
-    setAllVal(newAllVal);
-    setAllError(validateFields(newAllVal, allRules));
+    let newVal = {[name]: value};
+    setFieldsValue(newVal);
   };
 
   return (
     <>
       {React.cloneElement(input, {
-        value: allVal[name] || "",
+        value: getFieldValue(name) || "",
         name,
         onChange
       })}
-      <p className="red">{allError[name]}</p>
+      {/* <p className="red">{allError[name]}</p> */}
     </>
   );
 }
 
 function HandleButton(button) {
-  const {
-    allVal,
-    allRules,
-    allError,
-    setAllError,
-    onFinish,
-    onFinishFailed
-  } = useContext(FormContext);
-
+  const {onFinish, onFinishFailed} = useContext(FormContext);
   const {props} = button;
   const {htmltype} = props;
+  const {form} = useContext(FormContext);
+  const {getFieldsValue} = form;
+
   const onClick = e => {
     switch (htmltype) {
       case "submit":
-        const err = validateFields(allVal, allRules);
-        if (JSON.stringify(err) === "{}") {
-          onFinish(allVal);
-        } else {
-          onFinishFailed(err);
-        }
-        setAllError(err);
+        console.log("fields", getFieldsValue()); //sy-log
+        break;
+      case "reset":
+        form.resetFields();
+        console.log("fields reset", getFieldsValue()); //sy-log
         break;
       default:
         break;
@@ -116,15 +90,43 @@ function HandleButton(button) {
   });
 }
 
-function validateFields(allVal, allRules) {
-  let errors = {};
-  for (let rulesName in allRules) {
-    const rule = allRules[rulesName][0];
-    if (allVal[rulesName] === undefined) {
-      errors[rulesName] = rule.message;
+const Form = props => <InternalForm {...props} ref={formref} />;
+// const Form = React.forwardRef(InternalForm);
+
+function useForm() {
+  const [fields, setFields] = useState({});
+  let rules = {};
+
+  const setFieldsValue = val => {
+    const newFields = {
+      ...fields,
+      ...val
+    };
+    setFields(newFields);
+  };
+  const getFieldValue = field => {
+    return fields[field];
+  };
+  const getFieldsValue = field => {
+    return fields;
+  };
+
+  const resetFields = () => {
+    let tem = {...fields};
+    for (let k in tem) {
+      tem[k] = null;
     }
-  }
-  return errors;
+    setFields(tem);
+  };
+
+  return [
+    {
+      setFieldsValue,
+      getFieldValue,
+      getFieldsValue,
+      resetFields
+    }
+  ];
 }
 
 export {useForm, FormItem};

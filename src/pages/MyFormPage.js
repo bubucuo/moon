@@ -1,8 +1,6 @@
 import React, {useState, useEffect} from "react";
 import Form, {FormItem, useForm} from "../components/Form/index";
 
-// const FormItem = Form.Item;
-
 const nameRules = {
   required: true,
   message: "请输入姓名"
@@ -25,7 +23,7 @@ export default function MyFormPage(props) {
 
   useEffect(() => {
     setFieldsValue({name: "default"});
-    console.log("setFieldsValue", form); //sy-log
+    console.log("my-form", form); //sy-log
   }, []);
 
   const onFinish = val => {
@@ -37,6 +35,7 @@ export default function MyFormPage(props) {
   const onReset = err => {
     // resetFields();
   };
+  // console.log("my-form render");
 
   return (
     <div>
@@ -56,9 +55,9 @@ export default function MyFormPage(props) {
           <button className="btn" htmltype="submit" type="primary">
             Submit
           </button>
-          {/* <button htmltype="reset" type="default">
+          <button className="btn" htmltype="reset" type="default">
             reset
-          </button> */}
+          </button>
         </FormItem>
       </Form>
     </div>
